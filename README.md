@@ -54,11 +54,12 @@ O servidor iniciará na porta padrão. Acesse no seu navegador através do link 
 
 http://localhost:8080/login.html
 
-   Desenvolvedores e Contribuidores
+  Desenvolvedores e Contribuidores
+
 Este projeto foi desenvolvido como parte das avaliações acadêmicas do curso de tecnologia, alcançando a Nota Máxima (10) perante a banca avaliadora pela robustez e defesa técnica da arquitetura de software implementada.
 
-Gabriel Costa - Desenvolvimento Back-end, Regras de Negócio e Arquitetura do Banco - GitHub
+Gabriel Costa de Oliveira (github: gabriel-c-oliveira946) - Desenvolvimento Back-end, Regras de Negócio e Arquitetura do Banco - GitHub
 
-Caíque - Levantamento de Requisitos e Validação de Escopo
+Caíque André Brandão (github: caique-brandao09) - Levantamento de Requisitos e Validação de Escopo
 
-Rafael - Documentação Técnica e Apoio de Negócio
+Rafael Gramosa (github: ) - Documentação Técnica e Apoio de Negócio
