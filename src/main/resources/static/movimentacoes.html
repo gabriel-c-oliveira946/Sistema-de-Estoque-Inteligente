@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Movimentações - Sistema de Estoque Inteligente</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="navbar-esquerda">
+            <div class="navbar-logo">ESTOQUE INTELIGENTE</div>
+            <div class="navbar-menu">
+                <a href="/produtos.html">Produtos</a>
+                <a href="/movimentacoes.html" class="ativo">Movimentações</a>
+            </div>
+        </div>
+
+        <div class="user-dropdown" onclick="toggleMenuUsuario(event)">
+            <div class="user-profile">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span id="nomeUsuarioLogado">Carregando...</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <div class="dropdown-content" id="menuSair">
+                <button onclick="fazerLogout()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 5px; vertical-align: middle;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    Sair da Conta
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-largo">
+        <div class="layout-colunas">
+            
+            <div class="coluna-form">
+                <h3>Registrar Movimentação</h3>
+                <form id="formMovimentacao">
+                    <label>Produto:</label>
+                    <select id="produto" required>
+                        <option value="">Selecione um produto...</option>
+                    </select>
+                    
+                    <label>Tipo da Operação:</label>
+                    <select id="tipo" required>
+                        <option value="ENTRADA">Entrada (Adicionar ao Estoque)</option>
+                        <option value="SAIDA">Saída (Remover do Estoque)</option>
+                    </select>
+
+                    <label>Quantidade a Movimentar:</label>
+                    <input type="number" id="quantidade" min="1" required>
+                    
+                    <button type="submit" style="background-color: #28a745; width: 100%; margin-top: 10px;">Registrar</button>
+                </form>
+            </div>
+
+            <div class="coluna-tabela">
+                
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;">
+                    <input type="text" id="filtroTexto" placeholder="Buscar produto ou responsável..." style="margin: 0; flex: 2;" onkeyup="aplicarFiltros()">
+                    
+                    <select id="filtroTipo" style="margin: 0; flex: 1;" onchange="aplicarFiltros()">
+    <option value="">Todos os Tipos</option>
+    <option value="CADASTRO">Apenas Cadastros (Novos Produtos)</option>
+    <option value="ENTRADA">Apenas Entradas</option>
+    <option value="SAIDA">Apenas Saídas</option>
+    <option value="ALTERAÇÃO">Apenas Alterações</option>
+    <option value="EXCLUSÃO">Apenas Exclusões</option> 
+</select>
+                    
+                    <button onclick="limparFiltros()" style="background-color: #6c757d;">Limpar</button>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Data e Hora</th>
+                            <th>Produto</th>
+                            <th>Tipo</th>
+                            <th>Qtd</th>
+                            <th>Responsável</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaMovimentacoes"></tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const urlMovimentacoes = '/api/movimentacoes';
+        const urlProdutos = '/api/produtos';
+        
+        // Memória em cache para otimização de performance do mecanismo de buscas
+        let movimentacoesGlobais = [];
+
+        function toggleMenuUsuario(event) {
+            event.stopPropagation();
+            document.getElementById('menuSair').classList.toggle('mostrar');
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.closest('.user-dropdown')) {
+                const dropdown = document.getElementById('menuSair');
+                if (dropdown.classList.contains('mostrar')) {
+                    dropdown.classList.remove('mostrar');
+                }
+            }
+        }
+
+        async function carregarUsuarioLogado() {
+            const resposta = await fetch('/api/usuario-logado');
+            if (resposta.ok) {
+                const nome = await resposta.text();
+                document.getElementById('nomeUsuarioLogado').textContent = nome.charAt(0).toUpperCase() + nome.slice(1);
+            } else {
+                window.location.href = '/login.html';
+            }
+        }
+
+        async function fazerLogout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login.html';
+        }
+        
+        async function carregarProdutos() {
+            const resposta = await fetch(urlProdutos);
+            if (resposta.status === 401) {
+                window.location.href = '/login.html';
+                return;
+            }
+            const produtos = await resposta.json();
+            const selectProduto = document.getElementById('produto');
+            produtos.forEach(p => {
+                const opcao = `<option value="${p.id}">${p.nome} (Estoque atual: ${p.quantidade})</option>`;
+                selectProduto.innerHTML += opcao;
+            });
+        }
+
+        async function carregarMovimentacoes() {
+            const resposta = await fetch(urlMovimentacoes);
+            if (resposta.status === 401) return;
+
+            // Aloca a resposta do servidor na memória local para evitar chamadas redundantes ao banco
+            movimentacoesGlobais = await resposta.json();
+            aplicarFiltros();
+        }
+
+        // --- MOTOR DE FILTRAGEM EM MEMÓRIA ---
+        function aplicarFiltros() {
+            const textoBusca = document.getElementById('filtroTexto').value.toLowerCase();
+            const tipoBusca = document.getElementById('filtroTipo').value;
+
+            // Varre a lista mantida na memória RAM do navegador aplicando os critérios de busca
+            const movimentacoesFiltradas = movimentacoesGlobais.filter(mov => {
+                const nomeProduto = mov.produto ? mov.produto.nome.toLowerCase() : 'excluído';
+                const nomeUsuario = mov.usuarioResponsavel ? mov.usuarioResponsavel.login.toLowerCase() : 'desconhecido';
+                
+                // Validação de correspondência de caracteres de forma agnóstica a maiúsculas/minúsculas
+                const bateuTexto = nomeProduto.includes(textoBusca) || nomeUsuario.includes(textoBusca);
+                const bateuTipo = (tipoBusca === '') || (mov.tipo === tipoBusca);
+
+                return bateuTexto && bateuTipo;
+            });
+
+            // Atualiza a tabela com o conjunto de dados filtrado
+            renderizarTabela(movimentacoesFiltradas);
+        }
+
+        function limparFiltros() {
+            document.getElementById('filtroTexto').value = '';
+            document.getElementById('filtroTipo').value = '';
+            aplicarFiltros();
+        }
+
+        // Reconstrói as linhas do corpo da tabela a partir do array fornecido
+        function renderizarTabela(listaMovimentacoes) {
+            const corpoTabela = document.getElementById('tabelaMovimentacoes');
+            corpoTabela.innerHTML = ''; 
+
+            listaMovimentacoes.forEach(mov => {
+                const nomeProduto = mov.produto ? mov.produto.nome : 'Desconhecido';
+                const nomeUsuario = mov.usuarioResponsavel ? mov.usuarioResponsavel.login : 'Desconhecido';
+                const dataFormatada = new Date(mov.dataHora).toLocaleString('pt-BR');
+                
+                // Mapeamento dinâmico de estilo para cada tipo de movimentação 
+                const corTexto = mov.tipo === 'CADASTRO' ? '#6f42c1' :  
+                 mov.tipo === 'ENTRADA' ? '#28a745' : 
+                 mov.tipo === 'SAIDA' ? '#dc3545' : 
+                 mov.tipo === 'ALTERAÇÃO' ? '#0056b3' : '#6c757d';
+
+                const linha = `<tr>
+                    <td>${mov.id}</td>
+                    <td>${dataFormatada}</td>
+                    <td>${nomeProduto}</td>
+                    <td style="color: ${corTexto}; font-weight: bold;">${mov.tipo}</td>
+                    <td><strong>${mov.quantidade}</strong></td>
+                    <td>${nomeUsuario}</td>
+                </tr>`;
+                corpoTabela.innerHTML += linha;
+            });
+        }
+
+        // Intercepta e processa o envio de novas movimentações
+        document.getElementById('formMovimentacao').addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            const novaMovimentacao = {
+                produto: { id: parseInt(document.getElementById('produto').value) },
+                tipo: document.getElementById('tipo').value,
+                quantidade: parseInt(document.getElementById('quantidade').value)
+            };
+
+            const resposta = await fetch(urlMovimentacoes, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(novaMovimentacao)
+            });
+
+            if (resposta.ok) {
+                // Atualiza o estado da interface limpando e recarregando os dados de forma assíncrona
+                document.getElementById('formMovimentacao').reset();
+                document.getElementById('produto').innerHTML = '<option value="">Selecione um produto...</option>';
+                carregarProdutos();
+                carregarMovimentacoes();
+            } else {
+                const mensagemErro = await resposta.text();
+                alert(mensagemErro);
+            }
+        });
+
+        // Inicialização de dependências de carregamento da interface
+        carregarUsuarioLogado();
+        carregarProdutos();
+        carregarMovimentacoes();
+    </script>
+</body>
+</html>

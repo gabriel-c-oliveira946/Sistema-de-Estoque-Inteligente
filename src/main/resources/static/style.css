@@ -1,0 +1,206 @@
+/* =========================================
+   CONFIGURAÇÃO BASE DA PÁGINA
+========================================= */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    margin: 0; /* Zerado para a Navbar colar no topo */
+    padding: 0;
+}
+
+/* O "Card" principal para telas menores (Login e Cadastro) */
+.container {
+    max-width: 400px;
+    margin: 50px auto 0;
+    background: #ffffff;
+    padding: 30px 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Container mais largo para o Dashboard (Produtos e Movimentações) */
+.container-largo {
+    max-width: 1200px; 
+    margin: 40px auto 0;
+    background: #ffffff;
+    padding: 30px 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Títulos e Cabeçalhos */
+h1 {
+    color: #004085;
+    margin-top: 0;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 10px;
+}
+h2 { color: #6c757d; font-size: 1.1em; font-weight: normal; }
+h3 { color: #004085; margin-top: 25px; }
+
+/* Formulários (Inputs e Selects) */
+label { font-weight: bold; display: block; margin-top: 10px; }
+input[type="text"], input[type="password"], input[type="number"], select {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0 15px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Botões Modernos */
+button {
+    background-color: #0056b3;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+button:hover { background-color: #004494; }
+
+/* Tabelas Bonitas */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+th { background-color: #0056b3; color: white; }
+tr:hover { background-color: #f8f9fa; }
+
+/* Caixa de Alerta de Erro (Vermelha) */
+.alerta-erro {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    display: none; /* Fica escondida até o JavaScript ligar */
+}
+
+/* =========================================
+   FLEXBOX - LAYOUT LADO A LADO
+========================================= */
+.layout-colunas {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start; 
+    margin-top: 20px;
+}
+
+.coluna-form {
+    flex: 1; 
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.coluna-tabela {
+    flex: 2; 
+}
+
+/* =========================================
+   ESTILO DA NAVBAR (CABEÇALHO DO SITE)
+========================================= */
+.navbar {
+    background-color: #004085;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+    height: 60px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.navbar-esquerda {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.navbar-logo {
+    font-size: 1.2em;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.navbar-menu a {
+    color: #cce5ff;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+.navbar-menu a:hover, .navbar-menu a.ativo {
+    color: white;
+    background-color: #0056b3;
+}
+
+/* =========================================
+   DROPDOWN DO USUÁRIO (MENU DE SAIR)
+========================================= */
+.user-dropdown {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+.user-profile:hover {
+    background-color: #0056b3;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 50px;
+    background-color: white;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    z-index: 100;
+}
+
+.dropdown-content.mostrar {
+    display: block;
+}
+
+.dropdown-content button {
+    width: 100%;
+    background-color: transparent;
+    color: #dc3545;
+    text-align: left;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 0;
+}
+
+.dropdown-content button:hover {
+    background-color: #f8f9fa;
+}

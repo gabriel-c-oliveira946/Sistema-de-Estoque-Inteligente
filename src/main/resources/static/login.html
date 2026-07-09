@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Sistema de Estoque Inteligente</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" style="max-width: 400px; margin-top: 50px;">
+        <div style="text-align: center;">
+            <h1>Sistema de Estoque Inteligente</h1>
+            <h2>Organize seu estoque com eficiência</h2>
+        </div>
+        
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+        <div id="mensagemErro" class="alerta-erro">
+            Login ou senha incorretos. Tente novamente!
+        </div>
+
+        <form id="formLogin">
+            <label>Usuário:</label>
+            <input type="text" id="login" placeholder="Digite seu usuário" required>
+            
+            <label>Senha:</label>
+            <input type="password" id="senha" placeholder="Digite sua senha" required>
+            
+            <button type="submit" style="width: 100%;">Entrar no Sistema</button>
+        </form>
+
+        <div style="text-align: center; margin-top: 15px;">
+            <a href="/cadastro-usuario.html" style="color: #0056b3; text-decoration: none;">Ainda não tem conta? Cadastre-se</a>
+        </div>
+    </div>
+
+    <script>
+        // Escuta o envio do formulário de autenticação
+        document.getElementById('formLogin').addEventListener('submit', async (e) => {
+            // Evita o recarregamento síncrono da página
+            e.preventDefault();
+            
+            // Monta o objeto de dados com os valores extraídos da interface
+            const dadosLogin = {
+                login: document.getElementById('login').value,
+                senha: document.getElementById('senha').value
+            };
+
+            // Dispara a requisição de login para o endpoint correspondente no Java
+            const resposta = await fetch('/api/fazer-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dadosLogin)
+            });
+
+            // Analisa a resposta com base no status do protocolo HTTP
+            if (resposta.ok) {
+                // Se o status for sucesso (200 OK), redireciona o usuário para a aplicação principal
+                window.location.href = '/produtos.html';
+            } else {
+                // Se o status for de erro (401 Unauthorized), exibe o elemento visual de falha
+                document.getElementById('mensagemErro').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

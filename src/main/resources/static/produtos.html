@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Produtos - Sistema de Estoque Inteligente</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="navbar-esquerda">
+            <div class="navbar-logo">ESTOQUE INTELIGENTE</div>
+            <div class="navbar-menu">
+                <a href="/produtos.html" class="ativo">Produtos</a>
+                <a href="/movimentacoes.html">Movimentações</a>
+            </div>
+        </div>
+
+        <div class="user-dropdown" onclick="toggleMenuUsuario(event)">
+            <div class="user-profile">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                
+                <span id="nomeUsuarioLogado">Carregando...</span>
+                
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+            
+            <div class="dropdown-content" id="menuSair">
+                <button onclick="fazerLogout()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 5px; vertical-align: middle;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    Sair da Conta
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-largo">
+        <div class="layout-colunas">
+            
+            <div class="coluna-form">
+                <h3>Cadastrar / Editar Produto</h3>
+                <form id="formProduto">
+                    <label>Nome:</label>
+                    <input type="text" id="nome" required>
+                    
+                    <label>Quantidade:</label>
+                    <input type="number" id="quantidade" required>
+                    
+                    <label>Preço:</label>
+                    <input type="number" step="0.01" id="preco" required>
+
+                    <label>Categoria:</label>
+                    <select id="categoria" required>
+                        <option value="">Selecione uma categoria...</option>
+                    </select>
+                    
+                    <button type="submit" id="btnSalvar">Salvar Produto</button>
+                    <button type="button" id="btnCancelarEdicao" style="display: none; background-color: #dc3545;" onclick="cancelarEdicao()">Cancelar</button>
+                </form>
+            </div>
+
+            <div class="coluna-tabela">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+                    <input type="text" id="campoBusca" placeholder="Buscar por nome..." style="margin: 0; width: 60%;">
+                    <button onclick="buscarProdutos()">Pesquisar</button>
+                    <button onclick="carregarProdutos()" style="background-color: #6c757d;">Limpar</button>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Categoria</th>
+                            <th>Qtd</th>
+                            <th>Preço</th>
+                            <th>Criado por</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaProdutos"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlAPI = '/api/produtos';
+        const urlCategorias = '/api/categorias';
+        let produtosAtuais = []; 
+        let idProdutoEditando = null;
+
+        // --- FUNÇÕES DA NAVBAR ---
+        function toggleMenuUsuario(event) {
+            event.stopPropagation();
+            document.getElementById('menuSair').classList.toggle('mostrar');
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.closest('.user-dropdown')) {
+                const dropdown = document.getElementById('menuSair');
+                if (dropdown.classList.contains('mostrar')) {
+                    dropdown.classList.remove('mostrar');
+                }
+            }
+        }
+
+        async function carregarUsuarioLogado() {
+            const resposta = await fetch('/api/usuario-logado');
+            if (resposta.ok) {
+                const nome = await resposta.text();
+                document.getElementById('nomeUsuarioLogado').textContent = nome.charAt(0).toUpperCase() + nome.slice(1);
+            } else {
+                window.location.href = '/login.html';
+            }
+        }
+
+        async function fazerLogout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login.html';
+        }
+
+        // --- FUNÇÕES DE DADOS ---
+        async function carregarCategorias() {
+            const resposta = await fetch(urlCategorias);
+            const categorias = await resposta.json();
+            const selectCategoria = document.getElementById('categoria');
+            selectCategoria.innerHTML = '<option value="">Selecione uma categoria...</option>'; 
+            categorias.forEach(cat => {
+                const opcao = `<option value="${cat.id}">${cat.nome}</option>`;
+                selectCategoria.innerHTML += opcao;
+            });
+        }
+
+        async function carregarProdutos(nomeBusca = '') {
+            let url = urlAPI;
+            if (nomeBusca !== '') url += `?nome=${encodeURIComponent(nomeBusca)}`;
+
+            const resposta = await fetch(url);
+            if (resposta.status === 401) { window.location.href = '/login.html'; return; }
+
+            produtosAtuais = await resposta.json(); 
+            const corpoTabela = document.getElementById('tabelaProdutos');
+            corpoTabela.innerHTML = ''; 
+
+            produtosAtuais.forEach(produto => {
+                const nomeCategoria = produto.categoria ? produto.categoria.nome : 'Sem Categoria';
+                const nomeCriador = produto.usuarioResponsavel ? produto.usuarioResponsavel.login : 'Desconhecido';
+
+                const line = `<tr>
+                    <td>${produto.id}</td>
+                    <td>${produto.nome}</td>
+                    <td>${nomeCategoria}</td>
+                    <td><strong>${produto.quantidade}</strong></td>
+                    <td>R$ ${produto.preco.toFixed(2)}</td>
+                    <td>${nomeCriador}</td>
+                    <td>
+                        <button onclick="prepararEdicao(${produto.id})" style="padding: 5px 10px; font-size: 0.9em;">Editar</button>
+                        <button onclick="deletarProduto(${produto.id})" style="background-color: #dc3545; padding: 5px 10px; font-size: 0.9em;">Excluir</button>
+                    </td>
+                </tr>`;
+                corpoTabela.innerHTML += line;
+            });
+        }
+
+        function buscarProdutos() { carregarProdutos(document.getElementById('campoBusca').value); }
+
+        function prepararEdicao(id) {
+            const produto = produtosAtuais.find(p => p.id === id);
+            if (produto) {
+                document.getElementById('nome').value = produto.nome;
+                document.getElementById('quantidade').value = produto.quantidade;
+                document.getElementById('preco').value = produto.preco;
+                document.getElementById('categoria').value = produto.categoria ? produto.categoria.id : '';
+                idProdutoEditando = id;
+                document.getElementById('btnSalvar').textContent = 'Atualizar';
+                document.getElementById('btnSalvar').style.backgroundColor = '#28a745';
+                document.getElementById('btnCancelarEdicao').style.display = 'inline-block';
+            }
+        }
+
+        function cancelarEdicao() {
+            document.getElementById('formProduto').reset();
+            idProdutoEditando = null;
+            document.getElementById('btnSalvar').textContent = 'Salvar Produto';
+            document.getElementById('btnSalvar').style.backgroundColor = '#0056b3';
+            document.getElementById('btnCancelarEdicao').style.display = 'none';
+        }
+
+        document.getElementById('formProduto').addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            const produtoDados = {
+                nome: document.getElementById('nome').value,
+                quantidade: parseInt(document.getElementById('quantidade').value),
+                preco: parseFloat(document.getElementById('preco').value),
+                categoria: { id: parseInt(document.getElementById('categoria').value) }
+            };
+
+            if (idProdutoEditando === null) {
+                await fetch(urlAPI, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(produtoDados) });
+            } else {
+                await fetch(`${urlAPI}/${idProdutoEditando}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(produtoDados) });
+            }
+            cancelarEdicao(); carregarProdutos(); 
+        });
+
+        async function deletarProduto(id) {
+            if (confirm("Tem certeza que deseja excluir? A auditoria de Exclusão será gerada no histórico.")) {
+                await fetch(`${urlAPI}/${id}`, { method: 'DELETE' });
+                carregarProdutos();
+            }
+        }
+
+        // Inicialização
+        carregarUsuarioLogado();
+        carregarCategorias(); 
+        carregarProdutos();
+    </script>
+</body>
+</html>

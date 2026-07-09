@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro - Sistema de Estoque Inteligente</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" style="max-width: 400px; margin-top: 50px;">
+        <div style="text-align: center;">
+            <h1>Sistema de Estoque Inteligente</h1>
+            <h2>Organize seu estoque com eficiência</h2>
+        </div>
+        
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+        <div id="mensagemErro" class="alerta-erro">
+            Este login já está em uso. Escolha outro!
+        </div>
+
+        <form id="formCadastro">
+            <label>Escolha um Login:</label>
+            <input type="text" id="login" placeholder="Ex: Andersson_Maneiro_123" required>
+            
+            <label>Escolha uma Senha:</label>
+            <input type="password" id="senha" placeholder="Digite uma senha forte" required>
+            
+            <button type="submit" style="width: 100%; margin-top: 10px;">Cadastrar</button>
+        </form>
+
+        <div style="text-align: center; margin-top: 15px;">
+            <a href="/login.html" style="color: #0056b3; text-decoration: none;">Já tem uma conta? Voltar para o Login</a>
+        </div>
+    </div>
+
+    <script>
+        // Intercepta o evento de submissão do formulário para processamento assíncrono
+        document.getElementById('formCadastro').addEventListener('submit', async (e) => {
+            // Cancela o comportamento padrão do HTML de recarregar a página (Single Page Application feel)
+            e.preventDefault(); 
+            
+            // Captura e estrutura os dados digitados nos inputs em um objeto literal JavaScript
+            const dadosUsuario = {
+                login: document.getElementById('login').value,
+                senha: document.getElementById('senha').value
+            };
+
+            // Dispara uma requisição HTTP do tipo POST contendo o payload em formato JSON
+            const resposta = await fetch('/api/cadastrar-usuario', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dadosUsuario)
+            });
+
+            // Avalia o código de status HTTP retornado pelo servidor
+            if (resposta.ok) {
+                // Redirecionamento client-side em caso de status de sucesso (2xx)
+                window.location.href = '/login.html';
+            } else {
+                // Manipulação do DOM para exibir a mensagem de erro caso o status indique falha (ex: 400/409)
+                document.getElementById('mensagemErro').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
