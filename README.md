@@ -74,6 +74,6 @@ O servidor iniciará na porta padrão. Acesse no seu navegador através do link 
 
 - **[Gabriel Costa de Oliveira](https://github.com/gabriel-c-oliveira946)** - Desenvolvimento Back-end/Front-end, Regras de Negócio, Arquitetura do Banco e Controle de Versão.
   
-- **[Caíque André Brandão](https://github.com)** - Levantamento de Requisitos e Validação de Escopo.
+- **[Caíque André Brandão](https://github.com/caique-brandao09)** - Levantamento de Requisitos e Validação de Escopo.
   
 - **Rafael Gramosa** - Documentação Técnica e Apoio de Negócio.
