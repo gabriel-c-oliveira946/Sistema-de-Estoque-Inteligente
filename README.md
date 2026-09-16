@@ -52,4 +52,4 @@ Este projeto evoluiu de uma aplicação local para uma arquitetura moderna basea
 
 - **[Gabriel Costa de Oliveira](https://github.com/gabriel-c-oliveira946)** - Arquitetura de Nuvem (Docker/Render/Aiven), Desenvolvimento Back-end/Front-end, Regras de Negócio e Controle de Versão e Hospedagem.
 - **[Caíque André Brandão](https://github.com/caique-brandao09)** - Levantamento de Requisitos e Validação de Escopo.
-- **Rafael Gramosa** - Documentação Técnica e Apoio de Negócio.
+- **[Rafael Gramosa](https://github.com/Gr4m0sa)** - Documentação Técnica e Apoio de Negócio.
