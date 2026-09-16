@@ -14,7 +14,7 @@ O **Sistema de Estoque Inteligente** é uma aplicação completa para controle, 
 
 O sistema está hospedado na nuvem e pode ser acessado publicamente através do link abaixo:
 
-👉 **[Acessar o Sistema de Estoque Inteligente](https://sistema-de-estoque-inteligente-lcn4.onrender.com)**
+👉 **[Acessar o Sistema de Estoque Inteligente](https://sistema-de-estoque-inteligente-lcn4.onrender.com/login.html)**
 
 > ⚠️ **Nota sobre o acesso:** A aplicação está hospedada na camada gratuita do Render (Serverless). Caso o sistema fique sem acessos por mais de 15 minutos, o servidor entra em modo de hibernação (*spin-down*) para economizar recursos. **O primeiro acesso após a hibernação pode levar cerca de 50 segundos para "acordar" o sistema.** Os acessos subsequentes serão instantâneos.
 
